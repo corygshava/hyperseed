@@ -87,6 +87,7 @@
 
 				// Atomic creation: fopen mode 'x' fails if file exists (race-safe)
 				$handle = @fopen($path, 'x');
+
 				if ($handle === false) {
 					// Maybe another process created it in the tiny window between checks
 					if (file_exists($path) && is_file($path) && is_writable($path)) {
@@ -99,7 +100,7 @@
 
 				// Close handle, set safe perms, final sanity checks
 				fclose($handle);
-				@chmod($path, 0644);
+				@chmod($path, 0666);
 				clearstatcache(true, $path);
 
 				if (!is_file($path) || !is_writable($path)) {
