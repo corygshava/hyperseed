@@ -1,0 +1,11 @@
+make like system (each like has an expiry when done you can like again)
+    liking just updates a json file in _databank/likes.json with either likes or dislikes
+    just an object with {"likes":3,"dislikes" : 1}
+
+make list of emails to ignore
+    basically adds emails to _databank/blobkedemails.json
+    a record for the visit date, time and email
+
+keep track of visitors
+    basically update _databank/visits.json
+    a record for the visit date, time and hypernote version

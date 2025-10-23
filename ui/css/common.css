@@ -1,0 +1,124 @@
+*:not(.fa){
+	font-family: "monte","raleway",system-ui,sans-serif !important;
+}
+nav .navlinks{
+	text-transform: uppercase;
+	letter-spacing: 2px;
+}
+
+/* countdown */
+	.smallcard-group{
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		align-items: flex-start;
+		gap: var(--size-md);
+	}
+	.smallcard-group .smallcard{
+		flex: 0 1 120px;
+		border: 1px solid #ffffffaa;
+		background: #00000077;
+		border-radius: var(--roundness);
+		padding: 16px 24px;
+	}
+
+/* full page slideshow */
+	.fullpage_slides{
+		height: 100vh;
+		position: relative;
+		overflow: hidden;
+	}
+	.fullpage_slides .slideimg{
+		object-fit: cover;
+		width: 100%;
+		height: 100vh;
+	}
+
+	.fullpage_slides .theoverlay{
+		position: absolute;
+		top: 0;
+		left: 0;
+		height: 100%;
+		width: 100%;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		z-index: 2;
+	}
+	.fullpage_slides .theoverlay::before{
+		content: '';
+		position: absolute;
+		top: 0;
+		left: 0;
+		height: 100%;
+		width: 100%;
+		background: #00000077;
+		z-index: -1;
+	}
+	.fullpage_slides .theoverlay .mycontent{
+		width: min(800px,96vw);
+		text-align: center;
+		color: var(--clr-alttext);
+		padding: 24px;
+	}
+	.fullpage_slides .controller {
+		position: absolute;
+		width: min(200px,96vw);
+		top: 20vh;
+		left: 0;
+		z-index: 7;
+		opacity: 0.7;
+		background: transparent;
+		padding: 16px;
+		color: var(--clr-alttext);
+		font-size: var(--size-nm);
+		display: flex;
+		flex-direction: column;
+		gap: var(--size-sm);
+		background: linear-gradient(105deg, #fefefe77 10%, transparent 54%);
+	}
+
+/* modal stuff */
+	.modal-content.md{width: min(500px, 96vw);}
+
+/* logo */
+	.logoicon {
+		height: min(40px,10vw);
+		aspect-ratio: 1;
+		border-radius: 12px;
+		display: inline-block;
+		margin-right: 6px;
+	}
+	nav .logo {
+		font-size: min(1.1rem, 7vw);
+		font-weight: 700;
+		color: var(--themecolor);
+		gap: 16px;
+		display: inline-flex;
+		flex-wrap: nowrap;
+		justify-content: center;
+		align-items: center;
+	}
+
+/* smaller more focused stuff */
+	.notetxt{
+		position: fixed !important;
+		width: 100%;
+		text-align: center;
+		padding: 4px;
+		background: #111111aa;
+		font-size: 12px;
+		font-weight: 800;
+	}
+
+	footer{
+		/*background: linear-gradient(transparent,#111);*/
+		color: var(--clr-text);
+		padding: 12px 12px;
+		z-index: 9 !important;
+		opacity: 0.7;
+	}
+
+	[data-shown="0"]{
+		display: none;
+	}

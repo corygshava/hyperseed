@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>HyperSeed [Advanced]</title>
+
+	<link rel="stylesheet" href="ui/css/fa-all.css">
+	<link rel="stylesheet" href="ui/css/w3.css">
+	<link rel="stylesheet" href="ui/css/coryG_base.css">
+	<link rel="stylesheet" href="ui/css/coryG_UIOps.css">
+	<link rel="stylesheet" href="ui/css/animate.css">
+
+	<link rel="shortcut icon" href="favicon.webp" type="image/webp">
+	<link rel="stylesheet" type="text/css" href="styles.css">
+
+	<script src="ui/js/SuperScript.js"></script>
+	<script src="ui/js/toappend.js"></script>
+	<script src="ui/js/customalerter.js"></script>
+	<script src="ui/js/coryG_UIOps.js"></script>
+	<script src="ui/js/app.js"></script>
+</head>
+<body>
+	<div class="container">
+		<div class="w3-top spacy-md"><a href="javascript:history.back()" class="btn"><i class="fa fa-chevron-left"></i> go back</a></div>
+
+		<header>
+			<h1>HyperSeed</h1>
+			<p class="subtitle">Hi there, Cory here. so this is a simple app that generates data for your projects and export it to whatever you may want (kinda). like it to see it become its own dedicated project one day</p>
+			<div class="likeholder spacy-md slide-up" data-role="likers">
+				<button class="btn" data-likeapp="true"><i class="fa fa-heart"></i> like app</button>
+				<button class="btn" data-likeapp="false"><i class="fa fa-thumbs-down"></i> dislike app</button>
+			</div>
+		</header>
+
+		<div class="card">
+			<h2 class="card-title">Configuration</h2>
+			
+			<div class="form-group">
+				<label for="columnType">Add Column Type</label>
+				<select id="columnType">
+					<option value="name">First Name</option>
+					<option value="surname">Last Name</option>
+					<option value="fullname">Full Name</option>
+					<option value="email">Email</option>
+					<option value="number">Number</option>
+					<option value="tel">Phone Number</option>
+					<option value="date">Date</option>
+					<option value="bool">Boolean</option>
+					<option value="website">Website</option>
+					<option value="business">Business Name</option>
+					<option value="department">Department</option>
+					<option value="edge_null">NULL Values</option>
+                    <option value="edge_max">Max Length String</option>
+                    <option value="edge_future">Future Date</option>
+                    <option value="edge_special">Special Chars</option>
+				</select>
+			</div>
+			
+			<button id="addColumnBtn" class="btn">
+				<i class="fa fa-plus"></i> Add Column
+			</button>
+			
+			<div class="form-group">
+				<label>Selected Columns</label>
+				<div id="columnsContainer" class="columns-container">
+					<!-- Columns will be added here -->
+				</div>
+			</div>
+
+			<div class="form-group">
+				<label for="numRows">Number of Rows to Generate</label>
+				<input type="number" id="numRows" min="1" max="1000" value="10">
+			</div>
+		</div>
+		
+		<div class="actions">
+			<button id="generateBtn" class="btn">
+				<i class="fa fa-bolt"></i> Generate Data
+			</button>
+			<!-- <button id="downloadBtn" class="btn btn-success" disabled style="display: none">
+				<i class="fa fa-download"></i> Download CSV
+			</button> -->
+
+			<select id="outputFormat" style="padding:12px 15px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:8px;color:var(--text-primary)">
+				<option value="csv">CSV</option>
+				<option value="json">JSON</option>
+			</select>
+			<button id="downloadBtn" class="btn btn-success" disabled>
+				<i class="fas fa-download"></i> Download
+			</button>
+			<button id="copyDataBtn" class="btn" disabled>
+				<i class="fas fa-copy"></i> Copy
+			</button>
+		</div>
+		
+		<div class="card preview">
+			<h2 class="card-title">Preview</h2>
+			<div id="previewContainer">
+				<div class="empty-state">
+					<i class="fa fa-table"></i>
+					<p>No data generated yet. Configure your columns and click "Generate Data"</p>
+				</div>
+			</div>
+		</div>
+
+		<div class="form-group">
+			<label>Import/Export Schema</label>
+			<div style="display:flex;gap:10px;margin-top:8px">
+				<button id="exportSchemaBtn" class="btn" style="flex:1"><i class="fas fa-file-export"></i> Export JSON</button>
+				<input type="file" id="importSchemaInput" accept=".json" style="display:none">
+				<button id="importSchemaBtn" class="btn" style="flex:1"><i class="fas fa-file-import"></i> Import JSON</button>
+			</div>
+		</div>
+
+		<div class="toolbar">
+			<button id="clearBtn" class="btn"><i class="fas fa-trash-alt"></i> Clear Table</button>
+			<button id="saveBtn" class="btn"><i class="fas fa-save"></i> Save Columns</button>
+			<button id="viewAllBtn" class="btn"><i class="fas fa-folder-open"></i> View Presets</button>
+		</div>
+
+		<div class="card">
+			<h2 class="card-title"><i class="fas fa-database"></i> Schema Generator</h2>
+			<div class="form-group">
+				<label for="dbType">Database Type</label>
+				<select id="dbType">
+					<option value="postgres">PostgreSQL</option>
+					<option value="mysql">MySQL</option>
+					<option value="sqlite">SQLite</option>
+					<option value="prisma">Prisma Schema</option>
+				</select>
+			</div>
+			<button id="generateSchemaBtn" class="btn"><i class="fas fa-code"></i> Generate Schema</button>
+			<div id="schemaOutput" style="margin-top:15px; background:var(--bg-tertiary); padding:15px; border-radius:8px; font-family:monospace; white-space:pre; overflow:auto; max-height:200px;"></div>
+		</div>
+		
+		<!-- Modals -->
+		<div id="presetsModal" class="modal">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h3 class="modal-title">Saved Column Presets</h3>
+					<button class="close-modal">&times;</button>
+				</div>
+				<div class="modal-body" id="presetsList">
+					<!-- Presets will be loaded here -->
+				</div>
+			</div>
+		</div>
+
+		<div id="ruleModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">Column Rules</h3>
+                    <button class="close-modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Min Value (numbers)</label>
+                        <input type="number" id="ruleMin" class="rule-input">
+                    </div>
+                    <div class="form-group">
+                        <label>Max Value (numbers)</label>
+                        <input type="number" id="ruleMax" class="rule-input">
+                    </div>
+                    <div class="form-group">
+                        <label>Regex Pattern</label>
+                        <input type="text" id="ruleRegex" class="rule-input" placeholder="/pattern/flags">
+                    </div>
+                    <button id="applyRuleBtn" class="btn" style="width:100%;margin-top:15px">Apply Rules</button>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p><b class="themetxt">HyperSeed</b>, Generate realistic test data for your applications</p>
+            &copy; CoryG, All rights reserved (kinda)
+        </footer>
+	</div>
+
+	<script src="seedData.js"></script>
+	<script src="app.js"></script>
+	<script>
+		alert_danger('this version is still in Beta, beware of bugs',7);
+	</script>
+</body>
+</html>
