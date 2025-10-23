@@ -46,7 +46,7 @@
         </div>
 
         <div class="flowline gap-md wrapme">
-            <div class="card w3-hover-black slide-up" data-goto="_new.html">
+            <div class="card w3-hover-black slide-up" data-goto="./_new">
                 <span class="h3 themetxt spacy-md">Hyperseed basic</span>
                 <div style="padding: 0 40px;">
                     <li>Most stable release</li>
@@ -55,7 +55,7 @@
                     <li>CSV export</li>
                 </div>
             </div>
-            <div class="card w3-hover-black slide-up w3-display-container" style="overflow:hidden" data-goto="_steroids.html">
+            <div class="card w3-hover-black slide-up w3-display-container" style="overflow:hidden" data-goto="./_steroids">
                 <button class="w3-btn w3-orange w3-display-topright" style="border-radius: 0 0 0 var(--roundness);">Beta</button>
                 <span class="h3 themetxt spacy-md">Hyperseed Advanced</span>
                 <div style="padding: 0 40px;">
