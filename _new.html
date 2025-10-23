@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>HyperSeed [simple]</title>
+
+	<link rel="stylesheet" href="ui/css/fa-all.css">
+	<link rel="stylesheet" href="ui/css/w3.css">
+	<link rel="stylesheet" href="ui/css/coryG_base.css">
+	<link rel="stylesheet" href="ui/css/coryG_UIOps.css">
+	<link rel="stylesheet" href="ui/css/animate.css">
+
+	<link rel="shortcut icon" href="favicon.webp" type="image/webp">
+	<link rel="stylesheet" type="text/css" href="styles.css">
+
+	<script src="ui/js/SuperScript.js"></script>
+	<script src="ui/js/toappend.js"></script>
+	<script src="ui/js/customalerter.js"></script>
+	<script src="ui/js/coryG_UIOps.js"></script>
+	<script src="ui/js/app.js"></script>
+</head>
+<body>
+	<div class="container">
+		<div class="w3-top spacy-md"><a href="javascript:history.back()" class="btn"><i class="fa fa-chevron-left"></i> go back</a></div>
+
+		<!-- <div class="banner themeround slide-down"></div> -->
+		<header>
+			<h1>HyperSeed</h1>
+			<p class="subtitle">Hi there, Cory here. so this is a simple app that generates data for your projects. like it to see it become its own dedicated project one day</p>
+			<div class="likeholder spacy-md slide-up btn-group" data-role="likers">
+				<button class="btn" data-likeapp="true"><i class="fa fa-heart"></i> like app</button>
+				<button class="btn" data-likeapp="false"><i class="fa fa-thumbs-down"></i> dislike app</button>
+			</div>
+		</header>
+
+		<div class="card">
+			<h2 class="card-title">Configuration</h2>
+			
+			<div class="form-group">
+				<label for="columnType">Add Column Type</label>
+				<select id="columnType">
+					<option value="name">First Name</option>
+					<option value="surname">Last Name</option>
+					<option value="fullname">Full Name</option>
+					<option value="email">Email</option>
+					<option value="number">Number</option>
+					<option value="tel">Phone Number</option>
+					<option value="date">Date</option>
+					<option value="bool">Boolean</option>
+					<option value="website">Website</option>
+					<option value="business">Business Name</option>
+					<option value="department">Department</option>
+				</select>
+			</div>
+			
+			<button id="addColumnBtn" class="btn">
+				<i class="fa fa-plus"></i> Add Column
+			</button>
+			
+			<div class="form-group">
+				<label>Selected Columns</label>
+				<div id="columnsContainer" class="columns-container">
+					<!-- Columns will be added here -->
+				</div>
+			</div>
+
+			<div class="form-group">
+				<label for="numRows">Number of Rows to Generate</label>
+				<input type="number" id="numRows" min="1" max="1000" value="10">
+			</div>
+		</div>
+		
+		<div class="actions">
+			<button id="generateBtn" class="btn">
+				<i class="fa fa-bolt"></i> Generate Data
+			</button>
+			<button id="downloadBtn" class="btn btn-success" disabled>
+				<i class="fa fa-download"></i> Download CSV
+			</button>
+		</div>
+		
+		<div class="card preview">
+			<h2 class="card-title">Preview</h2>
+			<div id="previewContainer">
+				<div class="empty-state">
+					<i class="fa fa-table"></i>
+					<p>No data generated yet. Configure your columns and click "Generate Data"</p>
+				</div>
+			</div>
+		</div>
+
+		<div class="toolbar">
+			<button id="clearBtn" class="btn"><i class="fas fa-trash-alt"></i> Clear Table</button>
+			<button id="saveBtn" class="btn"><i class="fas fa-save"></i> Save Columns</button>
+			<button id="viewAllBtn" class="btn"><i class="fas fa-folder-open"></i> View Presets</button>
+		</div>
+		
+		<!-- Modals -->
+		<div id="presetsModal" class="modal">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h3 class="modal-title">Saved Column Presets</h3>
+					<button class="close-modal">&times;</button>
+				</div>
+				<div class="modal-body" id="presetsList">
+					<!-- Presets will be loaded here -->
+				</div>
+			</div>
+		</div>
+
+        <footer>
+            <p><b class="themetxt">HyperSeed</b>, Generate realistic test data for your applications</p>
+            &copy; CoryG, All rights reserved (kinda)
+        </footer>
+	</div>
+
+	<script src="seedData.js"></script>
+
+	<script>
+		// State
+		let columns = [];
+		let generatedData = [];
+
+		// DOM Elements
+		const numRowsInput = document.getElementById('numRows');
+		const columnTypeSelect = document.getElementById('columnType');
+		const addColumnBtn = document.getElementById('addColumnBtn');
+		const columnsContainer = document.getElementById('columnsContainer');
+		const generateBtn = document.getElementById('generateBtn');
+		const downloadBtn = document.getElementById('downloadBtn');
+		const previewContainer = document.getElementById('previewContainer');
+
+		// DOM Elements (v2)
+		const clearBtn = document.getElementById('clearBtn');
+		const saveBtn = document.getElementById('saveBtn');
+		const viewAllBtn = document.getElementById('viewAllBtn');
+		const presetsModal = document.getElementById('presetsModal');
+		const presetsList = document.getElementById('presetsList');
+		const closeModalBtn = document.querySelector('.close-modal');
+
+		// Pagination
+		let currentPage = 1;
+		const rowsPerPage = 5;
+
+		// Add column to configuration
+		addColumnBtn.addEventListener('click', () => {
+			const type = columnTypeSelect.value;
+			const label = columnTypeSelect.options[columnTypeSelect.selectedIndex].text;
+			
+			// Special handling for number and tel types
+			if (type === 'number' || type === 'tel') {
+				const length = prompt(`Enter length for ${label} (1-12, or leave empty for random):`, '');
+				if (length !== null) {
+					columns.push({ type, label: `${label}${length ? `:${length}` : ''}` });
+				}
+			} else {
+				columns.push({ type, label });
+			}
+			
+			renderColumns();
+		});
+
+		// Render selected columns
+		function renderColumns() {
+			columnsContainer.innerHTML = '';
+			
+			if (columns.length === 0) {
+				columnsContainer.innerHTML = '<p style="color: var(--text-secondary);">No columns added yet</p>';
+				return;
+			}
+			
+			columns.forEach((column, index) => {
+				const columnEl = document.createElement('div');
+				columnEl.className = 'column-item';
+				columnEl.innerHTML = `
+					<span class="column-type">${column.label}</span>
+					<button class="remove-btn" data-index="${index}">×</button>
+				`;
+				columnsContainer.appendChild(columnEl);
+			});
+			
+			// Add event listeners to remove buttons
+			document.querySelectorAll('.remove-btn').forEach(btn => {
+				btn.addEventListener('click', (e) => {
+					const index = parseInt(e.target.dataset.index);
+					columns.splice(index, 1);
+					renderColumns();
+				});
+			});
+		}
+
+		// Generate random data
+		function generateData() {
+			const numRows = parseInt(numRowsInput.value) || 10;
+			generatedData = [];
+			currentPage = 1;
+			
+			// Validate columns
+			if (columns.length === 0) {
+				alert('Please add at least one column');
+				return;
+			}
+			
+			// Generate rows
+			for (let i = 0; i < numRows; i++) {
+				const row = {};
+				
+				// Store name and surname for email generation
+				let currentName = '';
+				let currentSurname = '';
+				
+				columns.forEach(column => {
+					const { type, label } = column;
+					
+					if (type === 'name') {
+						currentName = getRandomItem(names);
+						row[label] = currentName;
+					} 
+					else if (type === 'surname') {
+						currentSurname = getRandomItem(surnames);
+						row[label] = currentSurname;
+					} 
+					else if (type === 'fullname') {
+						row[label] = `${getRandomItem(names)} ${getRandomItem(surnames)}`;
+					} 
+					else if (type === 'email') {
+						// Use stored name/surname if available, otherwise generate new
+						const name = currentName || getRandomItem(names);
+						const surname = currentSurname || getRandomItem(surnames);
+						const symbol = getRandomItem(validSymbols);
+						const provider = getRandomItem(emailProviders);
+						const domain = getRandomItem(domainExtensions);
+						row[label] = `${name.toLowerCase()}${symbol}${surname.toLowerCase()}@${provider}.${domain}`;
+					} 
+					else if (type === 'number') {
+						const lengthMatch = label.match(/:(\d+)/);
+						const length = lengthMatch ? parseInt(lengthMatch[1]) : Math.floor(Math.random() * 12) + 1;
+						row[label] = generateRandomNumber(length);
+					} 
+					else if (type === 'tel') {
+						const lengthMatch = label.match(/:(\d+)/);
+						const length = lengthMatch ? parseInt(lengthMatch[1]) : Math.floor(Math.random() * 10) + 3;
+						row[label] = `+${generateRandomNumber(length)}`;
+					} 
+					else if (type === 'date') {
+						row[label] = generateRandomDate();
+					} 
+					else if (type === 'bool') {
+						row[label] = Math.random() > 0.5 ? '1' : '0';
+					} 
+					else if (type === 'website') {
+						const name = getRandomItem(websiteNames);
+						const domain = getRandomItem(domainExtensions);
+						row[label] = `https://www.${name}.${domain}`;
+					} 
+					else if (type === 'business') {
+						row[label] = getRandomItem(businessNames);
+					} 
+					else if (type === 'department') {
+						row[label] = getRandomItem(departments);
+					}
+				});
+				
+				generatedData.push(row);
+			}
+			
+			renderPreview();
+			downloadBtn.disabled = false;
+		}
+
+		// Helper functions
+		function getRandomItem(arr) {
+			return arr[Math.floor(Math.random() * arr.length)];
+		}
+		
+		function generateRandomNumber(length) {
+			let num = '';
+			for (let i = 0; i < length; i++) {
+				num += Math.floor(Math.random() * 10);
+			}
+			return num;
+		}
+		
+		function generateRandomDate() {
+			const now = new Date();
+			const past = new Date(now.getFullYear() - 30, now.getMonth(), now.getDate());
+			const randomDate = new Date(past.getTime() + Math.random() * (now.getTime() - past.getTime()));
+			return randomDate.toISOString().split('T')[0];
+		}
+		
+		function renderPreview() {
+			if (generatedData.length === 0) {
+				previewContainer.innerHTML = '<div class="empty-state"><i class="fas fa-table"></i><p>No data to preview</p></div>';
+				renderPagination();
+				return;
+			}
+			
+			const headers = Object.keys(generatedData[0]);
+			let tableHTML = '<table class="preview-table"><thead><tr>';
+			
+			headers.forEach(header => {
+				tableHTML += `<th>${header}</th>`;
+			});
+			
+			tableHTML += '</tr></thead><tbody>';
+			
+			// Calculate pagination
+			const startIndex = (currentPage - 1) * rowsPerPage;
+			const endIndex = Math.min(startIndex + rowsPerPage, generatedData.length);
+			
+			for (let i = startIndex; i < endIndex; i++) {
+				const row = generatedData[i];
+				tableHTML += '<tr>';
+				headers.forEach(header => {
+					tableHTML += `<td>${row[header]}</td>`;
+				});
+				tableHTML += '</tr>';
+			}
+			
+			tableHTML += '</tbody></table>';
+			
+			previewContainer.innerHTML = tableHTML;
+			renderPagination();
+		}
+
+		function renderPagination() {
+			if (generatedData.length === 0) {
+				previewContainer.innerHTML += '<div class="pagination"></div>';
+				return;
+			}
+			
+			const totalPages = Math.ceil(generatedData.length / rowsPerPage);
+			let paginationHTML = '<div class="pagination">';
+			
+			// Previous button
+			paginationHTML += `<button class="page-btn ${currentPage === 1 ? 'disabled' : ''}" data-page="${currentPage - 1}">«</button>`;
+			
+			// Page numbers
+			for (let i = 1; i <= totalPages; i++) {
+				paginationHTML += `<button class="page-btn ${i === currentPage ? 'active' : ''}" data-page="${i}">${i}</button>`;
+			}
+			
+			// Next button
+			paginationHTML += `<button class="page-btn ${currentPage === totalPages ? 'disabled' : ''}" data-page="${currentPage + 1}">»</button>`;
+			
+			paginationHTML += '</div>';
+			
+			previewContainer.innerHTML += paginationHTML;
+			
+			// Add event listeners to pagination buttons
+			document.querySelectorAll('.page-btn:not(.disabled)').forEach(btn => {
+				btn.addEventListener('click', (e) => {
+					const page = parseInt(e.target.dataset.page);
+					if (page >= 1 && page <= totalPages) {
+						currentPage = page;
+						renderPreview();
+					}
+				});
+			});
+		}
+
+		function saveColumnsToStorage() {
+            const presetName = prompt('Enter a name for this preset:');
+            if (!presetName) return;
+            
+            const presets = JSON.parse(localStorage.getItem('hyperseedPresets') || '[]');
+            presets.push({ name: presetName, columns: [...columns] });
+            localStorage.setItem('hyperseedPresets', JSON.stringify(presets));
+            alert('Preset saved successfully!');
+        }
+
+        function loadPresetsIntoModal() {
+            const presets = JSON.parse(localStorage.getItem('hyperseedPresets') || '[]');
+            if (presets.length === 0) {
+                presetsList.innerHTML = '<p style="color: var(--text-secondary); text-align: center; padding: 20px;">No presets saved yet</p>';
+                return;
+            }
+            
+            let html = '';
+            presets.forEach((preset, index) => {
+                html += `
+                    <div class="preset-item">
+                        <span>${preset.name}</span>
+                        <div>
+                            <button class="btn apply-preset" data-index="${index}" style="padding: 5px 10px; margin-right: 8px;">
+                                <i class="fas fa-check"></i> Apply
+                            </button>
+                            <button class="btn delete-preset" data-index="${index}" style="padding: 5px 10px; background: var(--error);">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            presetsList.innerHTML = html;
+            
+            // Add event listeners
+            document.querySelectorAll('.apply-preset').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const index = parseInt(e.target.closest('.apply-preset').dataset.index);
+                    columns = [...presets[index].columns];
+                    renderColumns();
+                    presetsModal.classList.remove('active');
+                });
+            });
+            
+            document.querySelectorAll('.delete-preset').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    if (!confirm('Delete this preset?')) return;
+                    const index = parseInt(e.target.closest('.delete-preset').dataset.index);
+                    presets.splice(index, 1);
+                    localStorage.setItem('hyperseedPresets', JSON.stringify(presets));
+                    loadPresetsIntoModal();
+                });
+            });
+        }
+
+        function openPresetsModal() {
+            loadPresetsIntoModal();
+            presetsModal.classList.add('active');
+        }
+
+        // Toolbar event listeners
+        clearBtn.addEventListener('click', () => {
+            if (confirm('Clear all generated data and columns?')) {
+                columns = [];
+                generatedData = [];
+                currentPage = 1;
+                renderColumns();
+                renderPreview();
+                downloadBtn.disabled = true;
+            }
+        });
+
+        saveBtn.addEventListener('click', saveColumnsToStorage);
+        viewAllBtn.addEventListener('click', openPresetsModal);
+        closeModalBtn.addEventListener('click', () => presetsModal.classList.remove('active'));
+        presetsModal.addEventListener('click', (e) => {
+            if (e.target === presetsModal) presetsModal.classList.remove('active');
+        });
+		
+		// Download as CSV
+		function downloadCSV() {
+			if (generatedData.length === 0) return;
+			
+			const headers = Object.keys(generatedData[0]);
+			let csvContent = headers.join(',') + '\n';
+			
+			generatedData.forEach(row => {
+				const values = headers.map(header => {
+					let value = row[header] || '';
+					// Escape values that contain commas or quotes
+					if (value.toString().includes(',') || value.toString().includes('"')) {
+						value = `"${value.toString().replace(/"/g, '""')}"`;
+					}
+					return value;
+				});
+				csvContent += values.join(',') + '\n';
+			});
+			
+			const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+			const url = URL.createObjectURL(blob);
+			const link = document.createElement('a');
+			link.setAttribute('href', url);
+			link.setAttribute('download', 'generated_data.csv');
+			link.style.visibility = 'hidden';
+			document.body.appendChild(link);
+			link.click();
+			document.body.removeChild(link);
+		}
+
+		// Event listeners
+		generateBtn.addEventListener('click', generateData);
+		downloadBtn.addEventListener('click', downloadCSV);
+
+		// Initialize
+		renderColumns();
+		alert_info('Welcome to hyperseed hope you have fun',5);
+	</script>
+
+	<script src="js/shared.js"></script>
+</body>
+</html>
