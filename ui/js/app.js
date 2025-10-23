@@ -139,6 +139,10 @@ function hidelikers() {
 		easing: 'ease-out',
 		fill: 'forwards'
 	});
+
+	setTimeout(() => {
+		holder.style.display = "none";
+	}, 500);
 }
 
 // /*
