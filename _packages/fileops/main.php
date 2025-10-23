@@ -49,7 +49,7 @@
 					if (is_dir($path)) { $error = 'Target exists and is a directory'; return false; }
 					if (is_link($path)) { $error = 'Target is a symlink'; return false; }
 					if (!is_writable($path)) {
-						@chmod($path, 0666);
+						@chmod($path, 0644);
 						clearstatcache(true, $path);
 						if (!is_writable($path)){
 							$error = 'File exists but is not writable';
@@ -199,6 +199,7 @@
 				}
 
 				if (flock($handle, LOCK_EX)) {
+					@chmod($path, 0666);
 					$result = fwrite($handle, $data);
 					fflush($handle);
 					flock($handle, LOCK_UN);
