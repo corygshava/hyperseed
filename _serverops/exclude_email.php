@@ -11,7 +11,7 @@
         if($rs) {
             echo "your email was added successfully";
         } else {
-            echo "Email has already been added";
+            echo "Email has been added";
         }
     } else {
         echo "pass an email first";
